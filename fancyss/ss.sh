@@ -5,13 +5,22 @@ ss_redir_port=3333
 ss_local_port=3334
 dns_port=7913
 
+cmd() {
+    local bin=$1
+    kill_process $bin
+    $@ >/dev/null 2>&1 &
+    if pidof $bin >/dev/null; then
+        echo "$bin started"
+    fi
+}
+
 start() {
-    ss-local -l $ss_local_port -c $config_file -f /var/run/ss-local.pid >/dev/null 2>&1
-    ss-redir -l $ss_redir_port -b 0.0.0.0 -c $config_file -f /var/run/ss-redir.pid >/dev/null 2>&1
-    dns2socks "127.0.0.1:$ss_local_port" 8.8.8.8 "127.0.0.1:$dns_port" >/dev/null 2>&1 &
+    cmd ss-local -l $ss_local_port -c $config_file
+    cmd ss-redir -l $ss_redir_port -b 0.0.0.0 -c $config_file
+    cmd dns2socks "127.0.0.1:$ss_local_port" 8.8.8.8 "127.0.0.1:$dns_port"
+
     config_dnsmasq
     ss-rules -l $ss_redir_port --src-checkdst $(get_lan_cidr)
-    ps |grep -E "ss-local|ss-redir|dns2socks"
 }
 
 stop() {
@@ -44,20 +53,23 @@ reset_dnsmasq() {
 }
 
 kill_process() {
-    process=$(pidof $1)
+    local process=$(pidof $1)
     if [ -n "$process" ]; then
-		echo "关闭$1进程..."
-		killall $1 >/dev/null 2>&1
-		kill -9 "$process" >/dev/null 2>&1
-	fi
+        echo "关闭$1进程..."
+        killall $bin >/dev/null 2>&1
+        kill -9 $process >/dev/null 2>&1
+    fi
 }
 
 case $1 in
 start)
-    stop
     start
     ;;
 stop)
     stop
+    ;;
+restart)
+    stop
+    start
     ;;
 esac
