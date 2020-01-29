@@ -13,5 +13,5 @@ jobs:
     - name: Build the Docker image
       run: docker build ./build/ --file ./build/x86-64-19.07.0.dockerfile --tag openwrt-sdk
     - name: Run the Docker image
-      run: docker run -v "$(pwd)/bin":/home/build/openwrt/bin openwrt-sdk ./build.sh
+      run: docker run -v "/tmp/bin":/home/build/openwrt/bin openwrt-sdk ./build.sh
 
