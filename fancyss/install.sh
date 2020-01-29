@@ -1,7 +1,8 @@
 #!/bin/sh
-set -e
 
-DNS2SOCKS_URL="https://github.com/chenbojian/openwrt-dev/releases/download/0.0.1/dns2socks_2.0-20150628_x86_64.ipk"
+base_dir=$(dirname "$0")
+
+DNS2SOCKS_URL="https://github.com/chenbojian/openwrt-dev/releases/download/0.0.1/dns2socks_2.0-20150628_$(uname -m).ipk"
 
 opkg update
 opkg install ca-bundle ca-certificates libustream-mbedtls
@@ -15,6 +16,6 @@ wget "$DNS2SOCKS_URL" -O dns2socks.ipk
 opkg install dns2socks.ipk
 
 opkg remove dnsmasq && opkg install dnsmasq-full || true
-/etc/init.d/dnsmasq restart
 
+cp -f $base_dir/ss.json.template /etc/ss.json
 

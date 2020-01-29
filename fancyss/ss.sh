@@ -8,7 +8,7 @@ dns_port=7913
 cmd() {
     local bin=$1
     kill_process $bin
-    $@ >/dev/null 2>&1 &
+    $@ >/dev/null &
     if pidof $bin >/dev/null; then
         echo "$bin started"
     fi
