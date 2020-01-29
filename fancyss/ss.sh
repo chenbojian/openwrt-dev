@@ -10,7 +10,7 @@ start() {
     ss-redir -l $ss_redir_port -b 0.0.0.0 -c $config_file -f /var/run/ss-redir.pid >/dev/null 2>&1
     dns2socks "127.0.0.1:$ss_local_port" 8.8.8.8 "127.0.0.1:$dns_port" >/dev/null 2>&1 &
     config_dnsmasq
-    ss-rules -l $ss_redir_port
+    ss-rules -l $ss_redir_port --src-checkdst $(get_lan_cidr)
     ps |grep -E "ss-local|ss-redir|dns2socks"
 }
 
@@ -20,6 +20,17 @@ stop() {
     kill_process dns2socks
     kill_process ss-redir
     kill_process ss-local
+}
+
+get_lan_cidr(){
+   	netmask=`uci get network.lan.netmask`
+   	# Assumes there's no "255." after a non-255 byte in the mask
+   	local x=${netmask##*255.}
+   	set -- 0^^^128^192^224^240^248^252^254^ $(( (${#netmask} - ${#x})*2 )) ${x%%.*}
+   	x=${1%%$3*}
+   	suffix=$(( $2 + (${#x}/4) ))
+   	prefix=`uci get network.lan.ipaddr | cut -d "." -f1,2,3`
+   	echo $prefix.0/$suffix
 }
 
 config_dnsmasq() {
