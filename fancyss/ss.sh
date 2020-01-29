@@ -7,7 +7,7 @@ dns_port=7913
 
 start() {
     ss-local -l $ss_local_port -c $config_file -f /var/run/ss-local.pid >/dev/null 2>&1
-    ss-redir -l $ss_redir_port -c $config_file -f /var/run/ss-redir.pid >/dev/null 2>&1
+    ss-redir -l $ss_redir_port -b 0.0.0.0 -c $config_file -f /var/run/ss-redir.pid >/dev/null 2>&1
     dns2socks "127.0.0.1:$ss_local_port" 8.8.8.8 "127.0.0.1:$dns_port" >/dev/null 2>&1 &
     config_dnsmasq
     ss-rules -l $ss_redir_port
